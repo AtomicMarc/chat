@@ -1,0 +1,17 @@
+    {
+    "name": "discord-chat",
+    "version": "1.0.0",
+    "description": "Real-time Discord-style chat",
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
+    },
+    "dependencies": {
+        "express": "^4.19.2",
+        "socket.io": "^4.8.0",
+        "cors": "^2.8.5"
+    },
+    "keywords": ["chat", "realtime", "socket.io"],
+    "author": "Chat Project",
+    "license": "MIT"
+    }

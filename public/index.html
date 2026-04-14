@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat Discord Casero</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="/socket.io/socket.io.js"></script>
+</head>
+<body>
+  <div class="app">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+      <div class="users-header">
+        <h3>👥 Usuarios</h3>
+        <span id="onlineCount" class="online-count">0</span>
+      </div>
+      <div id="users-list" class="users-list"></div>
+    </div>
+
+    <!-- Chat -->
+    <div class="chat-container">
+      <div class="header">
+        <h2>💬 Chat en Tiempo Real</h2>
+        <div id="status" class="status">Conectando...</div>
+      </div>
+      <div id="messages" class="messages"></div>
+      <div class="input-container">
+        <input type="text" id="messageInput"
+          placeholder="Escribe un mensaje... ( /help para comandos )"
+          maxlength="500" autocomplete="off" disabled>
+        <button id="sendBtn" disabled>➤</button>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── OVERLAYS ───────────────────────────────────────────── -->
+
+  <!-- Join Modal -->
+  <div id="joinModal" class="modal">
+    <div class="modal-content">
+      <h3>¡Bienvenido al Chat!</h3>
+      <p class="modal-hint">Letras, números, _ o - · 3-20 caracteres</p>
+      <input type="text" id="usernameInput" placeholder="Tu nombre..." maxlength="20" autocomplete="off">
+      <div id="joinError" class="join-error hidden"></div>
+      <div class="modal-buttons"><button id="joinBtn">Entrar</button></div>
+    </div>
+  </div>
+
+  <!-- Ban Overlay -->
+  <div id="banOverlay" class="ban-overlay hidden">
+    <div class="ban-content">
+      <div class="ban-icon">🚫</div>
+      <h2>Has sido baneado</h2>
+      <p>Tiempo restante:</p>
+      <div id="banTimer" class="ban-timer">--</div>
+    </div>
+  </div>
+
+  <!-- Announcement Overlay (neon pro) -->
+  <div id="announcementOverlay" class="announce-overlay hidden">
+    <div class="announce-box">
+      <button class="announce-close" id="announceClose">✕</button>
+      <div class="announce-from" id="announceFrom"></div>
+      <div class="announce-text" id="announceText"></div>
+    </div>
+  </div>
+
+  <!-- Flashbang Overlay -->
+  <div id="flashbangOverlay" class="flashbang-overlay hidden"></div>
+
+  <!-- Panic Overlay (fondo rojo) -->
+  <div id="panicOverlay" class="panic-overlay hidden"></div>
+
+  <!-- Cinema Container -->
+  <div id="cinemaContainer" class="cinema-container hidden">
+    <div class="cinema-header">
+      <span>🎬 Cinema Mode</span>
+      <div class="cinema-actions">
+        <!-- Solo visible para admin con video directo -->
+        <button id="cinemaPlay"  class="cinema-btn admin-only hidden">▶ Play</button>
+        <button id="cinemaPause" class="cinema-btn admin-only hidden">⏸ Pause</button>
+        <button id="cinemaCloseAll" class="cinema-btn admin-only hidden" title="Cerrar para todos">✕ Todos</button>
+        <button id="cinemaCloseMe" class="cinema-btn" title="Cerrar solo para mí">✕ Cerrar</button>
+      </div>
+    </div>
+    <div id="cinemaPlayer"></div>
+  </div>
+
+  <script src="client.js"></script>
+</body>
+</html>

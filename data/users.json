@@ -1,0 +1,9 @@
+[
+  {
+    "name": "Marc",
+    "color": "#00ff00",
+    "isAdmin": true,
+    "bannedUntil": 0,
+    "mutedUntil": 1776180817493
+  }
+]
