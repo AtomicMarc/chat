@@ -421,34 +421,23 @@ socket.on('execCSS', payload => {
 // ─── /exec JS ─────────────────────────────────────────────────────────────────
 socket.on('execJS', payload => {
   try {
-    // 1. Extraer el código del objeto del servidor
+    // 1. Extraer el código del objeto
     let code = (payload && payload.code) ? payload.code : payload;
     if (!code) return;
 
-    // 2. Limpieza de caracteres invisibles y normalización
-    code = code.replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
-    code = code.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
+    // 2. Limpieza básica de caracteres invisibles
+    code = code.replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
 
-    // 3. FIX DE SEGURIDAD PARA COMILLAS (Estilos y Audios)
-    // Si pones: .style.color=red  -> lo convierte en .style.color='red'
-    code = code.replace(
-      /(\.\s*style\s*\.\s*\w+\s*=\s*)([^'"`;\n][^;\n]*)/g,
-      (_, prefix, val) => {
-        const v = val.trim();
-        if (/^['"`]/.test(v) || /^(true|false|\d)/.test(v)) return prefix + v;
-        return `${prefix}'${v.replace(/'/g, "\\'")}'`;
-      }
-    );
-
-    // 4. EJECUCIÓN
-    console.log('⚡ Ejecutando JS:', code);
+    // 3. Ejecución DIRECTA (sin intentar arreglar comillas)
+    console.log('⚡ Ejecutando JS Puro:', code);
     
-    // Usamos una función anónima para que el código tenga su propio espacio
-    const execute = new Function(code);
-    execute();
+    // Usamos el método de la etiqueta <script> que es el más robusto
+    const script = document.createElement('script');
+    script.text = code;
+    document.head.appendChild(script).parentNode.removeChild(script);
 
   } catch(e) {
-    console.error('[execJS] Fallo:', e.message);
-    if (typeof sysMsg === 'function') sysMsg(`⚠️ Error JS: ${e.message}`, '#ff4444');
+    console.error('[execJS] Error:', e.message);
+    if (typeof sysMsg === 'function') sysMsg(`⚠️ Error en comando: ${e.message}`, '#ff4444');
   }
 });
