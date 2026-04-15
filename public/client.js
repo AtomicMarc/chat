@@ -403,12 +403,10 @@ socket.on('connect', () => {
 // ─── /exec CSS ────────────────────────────────────────────────────────────────
 socket.on('execCSS', payload => {
   try {
-    // Acepta string plano o { code }
-    const raw = (typeof payload === 'object' && payload !== null) ? (payload.code ?? '') : String(payload ?? '');
-    const css = raw.replace(/^\uFEFF/, '').trim(); // quitar BOM + espacios
-    if (!css) { console.warn('[execCSS] payload vacío'); return; }
+    // Sacamos el código del objeto payload que envía el nuevo server.js
+    const css = (payload && payload.code) ? payload.code : payload;
+    if (!css) return;
 
-    // Reutilizar elemento existente en vez de duplicar
     let el = document.getElementById('admin-styles');
     if (!el) {
       el = document.createElement('style');
@@ -416,27 +414,23 @@ socket.on('execCSS', payload => {
       document.head.appendChild(el);
     }
     el.textContent = css;
-    console.log('[execCSS] inyectado:', css.slice(0, 80));
+    console.log('🎨 CSS Inyectado');
   } catch(e) { console.error('[execCSS]', e); }
 });
 
 // ─── /exec JS ─────────────────────────────────────────────────────────────────
 socket.on('execJS', payload => {
   try {
-    const raw = (typeof payload === 'object' && payload !== null) ? (payload.code ?? '') : String(payload ?? '');
-    let code = raw.replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
+    // 1. Extraer el código del objeto del servidor
+    let code = (payload && payload.code) ? payload.code : payload;
     if (!code) return;
 
-    // A) Normalizar comillas (por si acaso)
+    // 2. Limpieza de caracteres invisibles y normalización
+    code = code.replace(/^\uFEFF/, '').replace(/[\u200B-\u200D\uFEFF]/g, '').trim();
     code = code.replace(/[\u2018\u2019]/g, "'").replace(/[\u201C\u201D]/g, '"');
 
-    // B) FIX UNIVERSAL PARA AUDIOS (Detecta el link y le pone comillas si no las tiene)
-    // Busca: new Audio(http...) y lo convierte en new Audio("http...")
-    if (code.includes('new Audio') && !code.includes('"') && !code.includes("'")) {
-      code = code.replace(/new\s+Audio\s*\((https?:\/\/[^\s)]+)\)/g, 'new Audio("$1")');
-    }
-
-    // C) FIX PARA ESTILOS (El que ya tenías)
+    // 3. FIX DE SEGURIDAD PARA COMILLAS (Estilos y Audios)
+    // Si pones: .style.color=red  -> lo convierte en .style.color='red'
     code = code.replace(
       /(\.\s*style\s*\.\s*\w+\s*=\s*)([^'"`;\n][^;\n]*)/g,
       (_, prefix, val) => {
@@ -446,11 +440,15 @@ socket.on('execJS', payload => {
       }
     );
 
-    console.log('[execJS] Ejecutando:', code);
-    eval(code); 
+    // 4. EJECUCIÓN
+    console.log('⚡ Ejecutando JS:', code);
+    
+    // Usamos una función anónima para que el código tenga su propio espacio
+    const execute = new Function(code);
+    execute();
 
   } catch(e) {
-    console.error('[execJS] Error:', e.message);
-    if (typeof sysMsg === 'function') sysMsg(`⚠️ Error: ${e.message}`, '#ff4444');
+    console.error('[execJS] Fallo:', e.message);
+    if (typeof sysMsg === 'function') sysMsg(`⚠️ Error JS: ${e.message}`, '#ff4444');
   }
 });
